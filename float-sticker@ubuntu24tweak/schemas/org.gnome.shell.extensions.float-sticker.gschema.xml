@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.float-sticker" path="/org/gnome/shell/extensions/float-sticker/">
+    <key name="paste-to-screen" type="as">
+      <default>['F3']</default>
+      <summary>将剪切板内容贴到屏幕</summary>
+    </key>
+  </schema>
+</schemalist>
