@@ -1,5 +1,6 @@
 [x] 复制文本/图片后，F3贴在桌面上，右键可重新复制，双击可销毁，拖动可移动，滚动可缩放 @done(2026-06-19)
-[ ] vscode无法输入中文
+[x] vscode无法输入中文 @done(2026-06-19)
+    统一到 fcitx5（environment.d + im-config），需登出登入生效；见 docs/vscode-chinese-input.md
 [ ] vscode快捷键：复制行 alt+shift+up/down，删除行 ctrl+d，console.log ctrl+l(extension?)
 [ ] 语音输入法
 [ ] 任务栏同一应用多窗口，hover 时显示缩略图或平铺
