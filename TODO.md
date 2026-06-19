@@ -1,3 +1,9 @@
+[x] vscode的快捷键：alt+左/右，跳转历史光标位置，现在不是这个键，需要调过来 @done(2026-06-19)
+    keybindings.json 增绑 Alt+← → workbench.action.navigateBack、Alt+→ → navigateForward
+    （"后退/前进"，在光标历史位置间跳转，含跨文件）。VS Code Linux 默认是 Ctrl+Alt+- / Ctrl+Shift+-。
+    用户键位优先级高于默认，无需解绑；Alt+←/→ 不与 GNOME 全局热键冲突。见 docs/vscode-keybindings.md
+[ ] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常
+[ ] 华为备忘录(笔记)同步
 [x] chrome浏览器右键优化，现在需要连点两次才有效，可能是跟右键手势插件有关系 @done(2026-06-19)
     元凶=扩展 crxMouse: Mouse Gestures (jlgkpaicikihijadgifklkbpdajbkhjo)，确为右键手势插件。
     根因：Wayland 下 Chrome 右键菜单在 mousedown 瞬间弹出，crxMouse 无法在那一刻区分“点击 vs 手势”，
@@ -10,8 +16,6 @@
     最终选择：保留右键手势、菜单双击 = 切回原生 Wayland + cancelcontextmenu 重新勾上(默认推荐模式)。
       备选：cancelcontextmenu 关 + 把手势辅助键(gholdkey)设为“按住 Ctrl 才启用手势”(gholdkeytype=true)，
       可得“菜单单击 + Ctrl+右键拖手势”，全站一致但每次手势要按修饰键。
-[ ] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常
-[ ] 华为备忘录(笔记)同步
 [ ] 语音输入法：~/funasr_input_linux
 [x] 输入法优化：1、输入字上屏后，下方出现联想候选，此时左右键应不再切换候选，而是光标左右移动；2、还是字上屏后的候选，按数字键应上屏数字，而不是上屏对应的候选的；3、还是上屏后的候选，按空格键应上屏候选，而不是上屏空格；4、大写字母输入时，应直接上屏大写，而不是进入快速输入模式（它有个快捷键super+;，这个快速输入是什么？）@done(2026-06-19)
     主力输入法是 wbx(五笔，table 模块)，非拼音；改的是 conf/table.conf + table/wbx.conf。
