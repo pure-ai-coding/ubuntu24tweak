@@ -1,3 +1,27 @@
+[x] chrome浏览器有时会卡死，弹出3-4次等待/强制关闭对话框后，才可恢复 @done(2026-06-20)
+    根因=显卡驱动栈，非 Chrome 本身。本机三台显示器全接在独显 RTX 3050(card1)上，Intel UHD 630 闲置；
+      此前独显跑的是开源 nouveau + NVK(Mesa 实验性 Vulkan) + zink(GL-over-Vulkan) 实验栈。
+    两个致命问题：①nouveau 无法给 Ampere(RTX30系) 重新调频→GPU 永久锁最低频→整桌面/打字回显都卡(用户主诉"打字比键盘慢")；
+      ②NVK+zink 极易丢 GL 上下文→Chrome GPU 进程反复崩溃重启→GPU 标签页冻结→弹"等待/强制关闭"，重启几次才恢复。
+    日志铁证(journal)：GL_CONTEXT_LOST_KHR / "Restarting GPU process due to unrecoverable error" /
+      "GPU process exited unexpectedly: exit_code=512|8704" / vaInitialize failed。
+    解法：装官方闭源驱动 `sudo ubuntu-drivers install`(得 nvidia-driver-595-open) + 重启。已实测：
+      nouveau 卸载、nvidia 595.71.05 加载、GL 渲染器从 zink/NVK 变为 "NVIDIA GeForce RTX 3050/PCIe/SSE2"、
+      pstate 动态调频恢复(空闲P3/292MHz↔最高2100MHz)。用户实测整体"已经好多了"。
+    副作用：装闭源驱动后 GDM 默认进 X11。试过切回 Wayland 但登不进——org.gnome.Shell@wayland 启动即被
+      信号杀死(journal: "Failed with result 'signal'")、弹回登录界面；高度怀疑 DVI 竖屏 rotation=left 在
+      NVIDIA Wayland 下触发合成器崩溃(已知 bug)。
+    决定：日常用 X11、不再切 Wayland。理由——现硬件(三台~60Hz、全 scale=1、一台竖屏旋转)下 Wayland/X11
+      性能效率无可感知差别(之前的卡是 nouveau 锁频，与会话类型无关)；而旋转在 X11 反而更稳。
+    固化：登录界面(greeter)布局——把 ~/.config/monitors.xml 复制到 /var/lib/gdm3/.config/monitors.xml(属主 gdm)，
+      greeter 即显示 DP主屏+DVI竖屏(文件内含 DVI-D-0/1 两套连接器命名，X11/Wayland greeter 均适用)。已实测正常。
+      保留登录界面的 Wayland 选项(用户不禁用，WaylandEnable 维持默认注释态)；知道选了 Wayland 会崩、避免选即可。
+    第4项 Chrome 密码下拉：X11 下原生自动弹出(根因 xdg-popup 是原生 Wayland 专属)，已实测弹出；
+      desktop 里的 --disable-features=OzoneBubblesUsePlatformWidgets 在 X11 下为空操作、留着无害。
+    第20项 crxMouse 右键手势：X11 下行为与原生 Wayland 不同，待重新核对/微调。
+[x] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常 @done(2026-06-20)
+    根因=nouveau 模式设置问题。换闭源 nvidia 595 后即消失(实为第1项装驱动那轮就已好)；用户实测花屏/闪烁不再出现、登录界面正常。
+[ ] 语音输入法：~/funasr_input_linux
 [x] chrome浏览器不能自动弹出已保存的用户名、密码，需要手动输入（在测试右键优化时，曾经切x11时可自动弹出，但切回wayland后，就不再自动弹出）@done(2026-06-20)
     根因=原生 Wayland 后端下 Chrome 把 autofill 下拉做成 xdg-popup 创建失败（二进制有 "Failed to create XdgPopup"）→ 下拉不显示。
     非密码丢失：keyring(secrets+pkcs11)在跑、密码管理器默认开启、密码已存；切 X11(XWayland)能弹、切回原生 Wayland 不弹，与第20项的取舍死锁。
@@ -5,9 +29,6 @@
       下拉恢复且完全保留原生 Wayland（不动第20项右键、不退化 fcitx 中文输入与 HiDPI）。已实测：弹。
     固化：写进用户级覆盖 ~/.local/share/applications/google-chrome.desktop 三处 Exec（优先于系统文件、不怕升级覆盖、覆盖 Dock/链接/新窗口/无痕全入口）。
     否掉：整体切 X11(毁第20项)、升级(已是最新149.0.7827.155无更新)。备选未采：Bitwarden/KeePassXC 扩展(自带填充UI、不依赖原生浮层)。见 docs/chrome-password-autofill-wayland.md
-[ ] chrome浏览器有时会卡死，弹出3-4次等待/强制关闭对话框后，才可恢复
-[ ] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常
-[ ] 语音输入法：~/funasr_input_linux
 [x] 华为备忘录(笔记)同步 @done(2026-06-19)
     华为备忘录无官方 API / 无 Linux 客户端 / 网页版不支持批量导出文字 → "真·自动双向同步"做不到。
     实际诉求=继续用已固定在 Chrome 的网页版，只是它空闲很快超时掉登录、要反复重登。
@@ -35,6 +56,13 @@
     最终选择：保留右键手势、菜单双击 = 切回原生 Wayland + cancelcontextmenu 重新勾上(默认推荐模式)。
       备选：cancelcontextmenu 关 + 把手势辅助键(gholdkey)设为“按住 Ctrl 才启用手势”(gholdkeytype=true)，
       可得“菜单单击 + Ctrl+右键拖手势”，全站一致但每次手势要按修饰键。
+    [2026-06-20 X11 复测] 现已定居真·X11 桌面(非 XWayland 强制，见第1项)。原以为 X11 菜单在 mouseup 才弹、
+      能让 crxMouse 区分点击/手势从而两全——实测不行：cancelcontextmenu 取消勾选=有菜单单击但手势失效，
+      与 Wayland 同样的硬互斥。用户不接受 gholdkey 修饰键方案。
+    维持现状(最优)：cancelcontextmenu 勾上 = 手势可用 + 菜单需双击。
+      唯一别扭(菜单双击)的零副作用缓解：需要菜单时按键盘 菜单键(☰)/Shift+F10 对焦点元素单次弹出原生菜单。
+    待折腾(有空再试)：换支持“时间/位移阈值判定”的手势扩展，理论可“右键不动=菜单、右键拖=手势”共存且无修饰键——
+      候选：Gesturefy、smartUp Gestures(crxMouse 的菜单抑制是二元开关、无阈值，故做不到)。试成功再回填结论。
 [x] 输入法优化：1、输入字上屏后，下方出现联想候选，此时左右键应不再切换候选，而是光标左右移动；2、还是字上屏后的候选，按数字键应上屏数字，而不是上屏对应的候选的；3、还是上屏后的候选，按空格键应上屏候选，而不是上屏空格；4、大写字母输入时，应直接上屏大写，而不是进入快速输入模式（它有个快捷键super+;，这个快速输入是什么？）@done(2026-06-19)
     主力输入法是 wbx(五笔，table 模块)，非拼音；改的是 conf/table.conf + table/wbx.conf。
     · #1#2 关闭联想：table.conf Prediction=True→False。上屏后无联想候选，左右键回归移光标、数字键回归打数字；拆字时空格选字照常。
