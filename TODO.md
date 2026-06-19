@@ -1,3 +1,13 @@
+[x] chrome浏览器不能自动弹出已保存的用户名、密码，需要手动输入（在测试右键优化时，曾经切x11时可自动弹出，但切回wayland后，就不再自动弹出）@done(2026-06-20)
+    根因=原生 Wayland 后端下 Chrome 把 autofill 下拉做成 xdg-popup 创建失败（二进制有 "Failed to create XdgPopup"）→ 下拉不显示。
+    非密码丢失：keyring(secrets+pkcs11)在跑、密码管理器默认开启、密码已存；切 X11(XWayland)能弹、切回原生 Wayland 不弹，与第20项的取舍死锁。
+    无损解：启动参数加 --disable-features=OzoneBubblesUsePlatformWidgets，让气泡/下拉改用窗口内渲染、绕开 xdg-popup，
+      下拉恢复且完全保留原生 Wayland（不动第20项右键、不退化 fcitx 中文输入与 HiDPI）。已实测：弹。
+    固化：写进用户级覆盖 ~/.local/share/applications/google-chrome.desktop 三处 Exec（优先于系统文件、不怕升级覆盖、覆盖 Dock/链接/新窗口/无痕全入口）。
+    否掉：整体切 X11(毁第20项)、升级(已是最新149.0.7827.155无更新)。备选未采：Bitwarden/KeePassXC 扩展(自带填充UI、不依赖原生浮层)。见 docs/chrome-password-autofill-wayland.md
+[ ] chrome浏览器有时会卡死，弹出3-4次等待/强制关闭对话框后，才可恢复
+[ ] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常
+[ ] 语音输入法：~/funasr_input_linux
 [x] 华为备忘录(笔记)同步 @done(2026-06-19)
     华为备忘录无官方 API / 无 Linux 客户端 / 网页版不支持批量导出文字 → "真·自动双向同步"做不到。
     实际诉求=继续用已固定在 Chrome 的网页版，只是它空闲很快超时掉登录、要反复重登。
@@ -9,9 +19,6 @@
       RELOAD_AFTER_IDLE_MIN 若仍掉线就调小；需实测华为是滑动过期(保活有效)还是绝对过期(保活无效)。
     · ③自动重登(存密码本地)用户选择不做。备选C:GDPR"数据下载"导出加密zip(每条笔记JSON+HTML)做一次性整库备份。
     见 huawei-notes-sync/（脚本 + README.md）
-[ ] chrome浏览器有时会卡死，弹出3-4次等待/强制关闭对话框后，才可恢复
-[ ] chrome浏览器不能自动弹出用户名、密码，需要手动输入（在测试右键优化时，曾经切x11时可自动弹出，但切回wayland后，就不再自动弹出）
-[ ] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常
 [x] vscode的快捷键：alt+左/右，跳转历史光标位置，现在不是这个键，需要调过来 @done(2026-06-19)
     keybindings.json 增绑 Alt+← → workbench.action.navigateBack、Alt+→ → navigateForward
     （"后退/前进"，在光标历史位置间跳转，含跨文件）。VS Code Linux 默认是 Ctrl+Alt+- / Ctrl+Shift+-。
@@ -28,7 +35,6 @@
     最终选择：保留右键手势、菜单双击 = 切回原生 Wayland + cancelcontextmenu 重新勾上(默认推荐模式)。
       备选：cancelcontextmenu 关 + 把手势辅助键(gholdkey)设为“按住 Ctrl 才启用手势”(gholdkeytype=true)，
       可得“菜单单击 + Ctrl+右键拖手势”，全站一致但每次手势要按修饰键。
-[ ] 语音输入法：~/funasr_input_linux
 [x] 输入法优化：1、输入字上屏后，下方出现联想候选，此时左右键应不再切换候选，而是光标左右移动；2、还是字上屏后的候选，按数字键应上屏数字，而不是上屏对应的候选的；3、还是上屏后的候选，按空格键应上屏候选，而不是上屏空格；4、大写字母输入时，应直接上屏大写，而不是进入快速输入模式（它有个快捷键super+;，这个快速输入是什么？）@done(2026-06-19)
     主力输入法是 wbx(五笔，table 模块)，非拼音；改的是 conf/table.conf + table/wbx.conf。
     · #1#2 关闭联想：table.conf Prediction=True→False。上屏后无联想候选，左右键回归移光标、数字键回归打数字；拆字时空格选字照常。
