@@ -1,4 +1,12 @@
-[x] dolphin: 左树右列表，中文都是仿宋，需要调整 @done(2026-06-20)
+- [ ] 语音输入法：~/funasr_input_linux. 1、验证输入法可用（重登后生效）；2、改用fast (nano与Ollama并存GPU不够)；3、润色用本地LLM qwen2.5:3b @done(2026-06-21)。
+- [ ] 本机插着一个mercury的无线网卡，但好像系统识别不到，无法使用5g wifi
+- [ ] 全局 ctrl+f1 截图，可直接贴在屏幕上，或选择复制到剪贴板
+- [/] 复制文本/图片后，F3贴在桌面上，右键可重新复制，双击可销毁，拖动可移动，滚动可缩放 
+  - [x] 复制文本可贴屏幕 @done(2026-06-19)
+  - [ ] 长文本应能自动换行--可显示完整内容
+  - [ ] 现在鼠标滚动缩放突然失效了
+  - [ ] 当它在某应用（终端除外）上面时，不能拖动；在桌面上，若右键弹出系统菜单后，就不能拖动了
+- [x] dolphin: 左树右列表，中文都是仿宋，需要调整 @done(2026-06-20)
     走过的两条弯路(均无效，已回退)：
       ① 改 ~/.config/kdeglobals [General] font= —— 无效。GNOME 下未装 plasma-integration，没人把 kdeglobals 喂给 Qt。已还原(备份 kdeglobals.bak.20260620154739)。
       ② 加 fontconfig 规则给 "Noto Sans" append Noto Sans CJK SC —— 无效。Qt 的中文回退不吃 fontconfig 排序(见下)。已删。
@@ -12,8 +20,7 @@
       Qt 的主家族本身即含中文字形→根本不触发回退→不再仿宋。原值 'Noto Sans,  10'(空格×2)，回退即恢复。
       副作用极小：GTK 应用界面字体一并变 CJK SC，但其拉丁字形与 Noto Sans 几乎一致，且 GTK 中文本就经 Pango 回退到 CJK SC。
     已实测(同样抓 qt.text.font.match 日志)：Dolphin 主家族变 'Noto Sans CJK SC'、日志中再无任何仿宋/Adobe 仿宋 Std 回退请求。即时生效，无需注销。
-[ ] 语音输入法：~/funasr_input_linux. 1、验证输入法可用；2、使用asr（不是fast）；3、润色用本地LLM（有6GB显卡）。
-[x] chrome浏览器有时会卡死，弹出3-4次等待/强制关闭对话框后，才可恢复 @done(2026-06-20)
+- [x] chrome浏览器有时会卡死，弹出3-4次等待/强制关闭对话框后，才可恢复 @done(2026-06-20)
     根因=显卡驱动栈，非 Chrome 本身。本机三台显示器全接在独显 RTX 3050(card1)上，Intel UHD 630 闲置；
       此前独显跑的是开源 nouveau + NVK(Mesa 实验性 Vulkan) + zink(GL-over-Vulkan) 实验栈。
     两个致命问题：①nouveau 无法给 Ampere(RTX30系) 重新调频→GPU 永久锁最低频→整桌面/打字回显都卡(用户主诉"打字比键盘慢")；
@@ -34,16 +41,16 @@
     第4项 Chrome 密码下拉：X11 下原生自动弹出(根因 xdg-popup 是原生 Wayland 专属)，已实测弹出；
       desktop 里的 --disable-features=OzoneBubblesUsePlatformWidgets 在 X11 下为空操作、留着无害。
     第20项 crxMouse 右键手势：X11 下行为与原生 Wayland 不同，待重新核对/微调。
-[x] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常 @done(2026-06-20)
+- [x] 现系统登出待登入时，桌面花屏、闪烁、部分区域可见登出前窗口部分内容；按回车、盲输密码、回车，可进入系统，进入后恢复正常 @done(2026-06-20)
     根因=nouveau 模式设置问题。换闭源 nvidia 595 后即消失(实为第1项装驱动那轮就已好)；用户实测花屏/闪烁不再出现、登录界面正常。
-[x] chrome浏览器不能自动弹出已保存的用户名、密码，需要手动输入（在测试右键优化时，曾经切x11时可自动弹出，但切回wayland后，就不再自动弹出）@done(2026-06-20)
+- [x] chrome浏览器不能自动弹出已保存的用户名、密码，需要手动输入（在测试右键优化时，曾经切x11时可自动弹出，但切回wayland后，就不再自动弹出）@done(2026-06-20)
     根因=原生 Wayland 后端下 Chrome 把 autofill 下拉做成 xdg-popup 创建失败（二进制有 "Failed to create XdgPopup"）→ 下拉不显示。
     非密码丢失：keyring(secrets+pkcs11)在跑、密码管理器默认开启、密码已存；切 X11(XWayland)能弹、切回原生 Wayland 不弹，与第20项的取舍死锁。
     无损解：启动参数加 --disable-features=OzoneBubblesUsePlatformWidgets，让气泡/下拉改用窗口内渲染、绕开 xdg-popup，
       下拉恢复且完全保留原生 Wayland（不动第20项右键、不退化 fcitx 中文输入与 HiDPI）。已实测：弹。
     固化：写进用户级覆盖 ~/.local/share/applications/google-chrome.desktop 三处 Exec（优先于系统文件、不怕升级覆盖、覆盖 Dock/链接/新窗口/无痕全入口）。
     否掉：整体切 X11(毁第20项)、升级(已是最新149.0.7827.155无更新)。备选未采：Bitwarden/KeePassXC 扩展(自带填充UI、不依赖原生浮层)。见 docs/chrome-password-autofill-wayland.md
-[x] 华为备忘录(笔记)同步 @done(2026-06-19)
+- [x] 华为备忘录(笔记)同步 @done(2026-06-19)
     华为备忘录无官方 API / 无 Linux 客户端 / 网页版不支持批量导出文字 → "真·自动双向同步"做不到。
     实际诉求=继续用已固定在 Chrome 的网页版，只是它空闲很快超时掉登录、要反复重登。
     方案：网页版当客户端 + 会话保活（不重建同步）。
@@ -54,11 +61,11 @@
       RELOAD_AFTER_IDLE_MIN 若仍掉线就调小；需实测华为是滑动过期(保活有效)还是绝对过期(保活无效)。
     · ③自动重登(存密码本地)用户选择不做。备选C:GDPR"数据下载"导出加密zip(每条笔记JSON+HTML)做一次性整库备份。
     见 huawei-notes-sync/（脚本 + README.md）
-[x] vscode的快捷键：alt+左/右，跳转历史光标位置，现在不是这个键，需要调过来 @done(2026-06-19)
+- [x] vscode的快捷键：alt+左/右，跳转历史光标位置，现在不是这个键，需要调过来 @done(2026-06-19)
     keybindings.json 增绑 Alt+← → workbench.action.navigateBack、Alt+→ → navigateForward
     （"后退/前进"，在光标历史位置间跳转，含跨文件）。VS Code Linux 默认是 Ctrl+Alt+- / Ctrl+Shift+-。
     用户键位优先级高于默认，无需解绑；Alt+←/→ 不与 GNOME 全局热键冲突。见 docs/vscode-keybindings.md
-[x] chrome浏览器右键优化，现在需要连点两次才有效，可能是跟右键手势插件有关系 @done(2026-06-19)
+- [x] chrome浏览器右键优化，现在需要连点两次才有效，可能是跟右键手势插件有关系 @done(2026-06-19)
     元凶=扩展 crxMouse: Mouse Gestures (jlgkpaicikihijadgifklkbpdajbkhjo)，确为右键手势插件。
     根因：Wayland 下 Chrome 右键菜单在 mousedown 瞬间弹出，crxMouse 无法在那一刻区分“点击 vs 手势”，
     于是“右键单击出菜单”与“右键拖动出手势”在 Wayland 上天然互斥。
@@ -77,14 +84,14 @@
       唯一别扭(菜单双击)的零副作用缓解：需要菜单时按键盘 菜单键(☰)/Shift+F10 对焦点元素单次弹出原生菜单。
     待折腾(有空再试)：换支持“时间/位移阈值判定”的手势扩展，理论可“右键不动=菜单、右键拖=手势”共存且无修饰键——
       候选：Gesturefy、smartUp Gestures(crxMouse 的菜单抑制是二元开关、无阈值，故做不到)。试成功再回填结论。
-[x] 输入法优化：1、输入字上屏后，下方出现联想候选，此时左右键应不再切换候选，而是光标左右移动；2、还是字上屏后的候选，按数字键应上屏数字，而不是上屏对应的候选的；3、还是上屏后的候选，按空格键应上屏候选，而不是上屏空格；4、大写字母输入时，应直接上屏大写，而不是进入快速输入模式（它有个快捷键super+;，这个快速输入是什么？）@done(2026-06-19)
+- [x] 输入法优化：1、输入字上屏后，下方出现联想候选，此时左右键应不再切换候选，而是光标左右移动；2、还是字上屏后的候选，按数字键应上屏数字，而不是上屏对应的候选的；3、还是上屏后的候选，按空格键应上屏候选，而不是上屏空格；4、大写字母输入时，应直接上屏大写，而不是进入快速输入模式（它有个快捷键super+;，这个快速输入是什么？）@done(2026-06-19)
     主力输入法是 wbx(五笔，table 模块)，非拼音；改的是 conf/table.conf + table/wbx.conf。
     · #1#2 关闭联想：table.conf Prediction=True→False。上屏后无联想候选，左右键回归移光标、数字键回归打数字；拆字时空格选字照常。
     · #3 与 #2 在 table 模块互斥：联想候选是普通候选列表，数字键是其内置选词键、无法在保留候选时单独禁用。选了关闭联想（牺牲“空格接受联想”）。
     · #4 大写直接上屏：wbx.conf QuickPhraseText=ABC…Z 清空。原配置把所有大写字母设成“快速输入(QuickPhrase)”的触发文本，故打大写就进入快捷短语模式。
       “快速输入/快捷短语”= fcitx5 输入缩写展开为预设短语/符号的功能；用户配置里未发现 super+; 绑定，真正触发是 QuickPhraseText。
     · 改完 fcitx5-remote -r 重载即可，无需登出。备份 *.bak.20260619223419。
-[x] 类windows的文件管理器，左侧树形结构、支持自动展开，右侧本目录下的子目录、文件列表；支持双侧同时显示、联动显示、拖动复制，一侧本地、一侧sftp，sftp可共享终端中的免密登录或能永久记住密码,且可在左侧树形结构中列出，可直接双击修改远程文件内容 @done(2026-06-19)
+- [x] 类windows的文件管理器，左侧树形结构、支持自动展开，右侧本目录下的子目录、文件列表；支持双侧同时显示、联动显示、拖动复制，一侧本地、一侧sftp，sftp可共享终端中的免密登录或能永久记住密码,且可在左侧树形结构中列出，可直接双击修改远程文件内容 @done(2026-06-19)
     方案：Dolphin（主力，GNOME 上原生 Qt、能输中文、复用 ssh-agent）+ WinSCP on Wine（备用）。
     否掉 Double Commander / Krusader（非资源管理器风格 / 不好用）；只有 Dolphin 同时满足左树+详细列表+预览窗格。
     · 免密（与工具无关）：ssh-copy-id 推公钥到远程，终端/Dolphin/scp 全免密；~/.ssh/config 已建脚手架供多主机切换。
@@ -92,26 +99,26 @@
     · WinSCP：WinSCP.exe 是 32 位 → 需 i386+wine32，旧纯 64 位前缀报 c0000135，删 ~/.wine 重建 WoW64。
       图标从 exe 的 RT_ICON 抠 256px PNG；TreeOnLeft=1 树左排；翻译 chs.zip 必须与版本一致(带版本号 URL)；会话密码加密保存。
     · 中文输入：Wine 走 XWayland，fcitx5 XIM 在 WinSCP 里可用。详见 docs/file-manager-sftp.md
-[x] 终端鼠标右键复制粘贴：若有选中文本，则复制；若无且有光标，则粘贴 @done(2026-06-19)
+- [x] 终端鼠标右键复制粘贴：若有选中文本，则复制；若无且有光标，则粘贴 @done(2026-06-19)
     GNOME Terminal/VTE 做不到（右键菜单写死，Wayland 也无法全局拦截鼠标）；改用 WezTerm。
     ~/.config/wezterm/wezterm.lua：智能右键（选中→复制并清选区/否则粘贴）、不做选中即复制、
     仿 Windows Terminal 拆 pane（Ctrl+Shift+E/O 分屏，Alt+方向切焦点，Ctrl+Shift+方向调大小）。
     设默认：gsettings 已设；还需手动 sudo update-alternatives --set x-terminal-emulator /usr/bin/open-wezterm-here。
     tmux 远程仍用；其 mouse on 会截获鼠标，按 Shift 绕过。详见 docs/wezterm.md
-[x] 任务栏同一应用多窗口，hover 时显示缩略图或平铺 @done(2026-06-19)
+- [x] 任务栏同一应用多窗口，hover 时显示缩略图或平铺 @done(2026-06-19)
     现状：Ubuntu Dock 原生不支持 hover 触发缩略图。当前配置下——
     · 右键点击图标弹出菜单，菜单内含各窗口的缩略图，点缩略图可跳转到对应窗口；
     · 左键保留 minimize（不弹缩略图）。
     相关设置：show-windows-preview=true, default-windows-preview-to-open=true, click-action='minimize'
     备选：左键也弹缩略图可设 click-action='previews'（或 'focus-or-previews'）；真正鼠标悬停弹出需改用 Dash to Panel。
-[x] ~/popular-fonts 安装这些字体 @done(2026-06-19)
+- [x] ~/popular-fonts 安装这些字体 @done(2026-06-19)
     复制到 ~/.local/share/fonts/popular-fonts/ 并 fc-cache 刷新；313 个字体（6 个重复基础字体已跳过）
-[x] “文件”应用有个绿色1角标，不知道是什么情况 @done(2026-06-19)
+- [x] “文件”应用有个绿色1角标，不知道是什么情况 @done(2026-06-19)
     是 Ubuntu Dock 的通知计数徽章（show-icons-notifications-counter），对应一条未读系统通知，点开/清除后即消失
-[x] vscode快捷键：复制行 alt+shift+up/down，删除行 ctrl+d，console.log ctrl+l(extension?) @done(2026-06-19)
+- [x] vscode快捷键：复制行 alt+shift+up/down，删除行 ctrl+d，console.log ctrl+l(extension?) @done(2026-06-19)
     keybindings.json 改绑复制行/删除行；console.log 用 Turbo Console Log 扩展（默认 Ctrl+Alt+L）；见 docs/vscode-keybindings.md
-[x] 复制文本/图片后，F3贴在桌面上，右键可重新复制，双击可销毁，拖动可移动，滚动可缩放 @done(2026-06-19)
-[x] vscode无法输入中文 @done(2026-06-19)
+- [x] 复制文本/图片后，F3贴在桌面上，右键可重新复制，双击可销毁，拖动可移动，滚动可缩放 @done(2026-06-19)
+- [x] vscode无法输入中文 @done(2026-06-19)
     统一到 fcitx5（environment.d + im-config），需登出登入生效；见 docs/vscode-chinese-input.md
-[x] 列出系统所有注册的热键，哪个应用使用的，显示有无冲突 @done(2026-06-19)
+- [x] 列出系统所有注册的热键，哪个应用使用的，显示有无冲突 @done(2026-06-19)
     见 list-hotkeys/（脚本 + hotkeys.md/json + 说明）
