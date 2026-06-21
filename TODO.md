@@ -1,4 +1,19 @@
-- [ ] 语音输入法：~/funasr_input_linux. 1、验证输入法可用（重登后生效）；2、改用fast (nano与Ollama并存GPU不够)；3、润色用本地LLM qwen2.5:3b @done(2026-06-21)。
+- [x] 想实现内网穿透，通过一台有公网域名/IP的服务器作中转，用frp软件实现远程ssh连接本机。 @done(2026-06-21)
+    [2026-06-21] 已完成公网服务器 frps systemd 化，服务 active 并监听公网 frp 端口；本机已安装 frpc 0.68.0 到
+      ~/.local/bin/frpc，写入用户级 systemd 服务 ~/.config/systemd/user/frpc.service 并 enable/start，远端已监听转发端口。
+      已启用本机用户 linger。仓库文档仅保留占位符，不写真实域名/IP/密码/密钥。
+    [2026-06-21 完成] 用户已运行 `scripts/frp-ssh-tunnel-local-prereq.sh`，本机 `ssh.service` 已 enabled/active，
+      监听 22；本机 `frpc.service` active，远端 `frps.service` active，远端已监听 frp 控制端口和 SSH 转发端口。
+      用 `ssh -p <转发端口> <本机用户名>@<公网域名>` 非交互测试已到达本机 SSH 认证阶段；实际使用时输入本机用户密码登录。
+      后续安全加固：改 SSH 密钥登录并关闭密码登录，另给 frp 增加 token。
+- [ ] 全局 ctrl+f1 截图，可直接贴在屏幕上，或选择复制到剪贴板，双击可以销毁，拖动可以移动；鼠标滚轮可缩放。此功能可参照windows下的snipaste。
+- [/] 复制文本/图片后，F3贴在桌面上，右键可重新复制，双击可销毁，拖动可移动，滚动可缩放 
+  - [x] 复制文本可贴屏幕 @done(2026-06-19)
+  - [ ] 长文本应能自动换行--可显示完整内容
+  - [ ] 现在鼠标滚动缩放突然失效了
+  - [ ] 当它在某应用（终端除外）上面时，不能拖动；在桌面上，若右键弹出系统菜单后，就不能拖动了
+  - [ ] 复制图片可贴屏幕
+- [x] 语音输入法：~/funasr_input_linux. 1、验证输入法可用（重登后生效）；2、改用fast (nano与Ollama并存GPU不够)；3、润色用本地LLM qwen2.5:3b @done(2026-06-21)
 - [x] 本机插着一个mercury的无线网卡，但好像系统识别不到，无法使用5g wifi @done(2026-06-21)
     已定位：不是 Realtek，而是 AICsemi AIC8800D80 USB 网卡。启动时先枚举为虚拟U盘 `a69c:5721 Aic MSC`，
       已被 usb_modeswitch 切到 WLAN 模式 `a69c:8d80 AIC Wlan`，但 NetworkManager 只看到内置 `ath9k/wlp6s0`。
@@ -25,12 +40,12 @@
       kernel 日志显示 `is 5g support = 1`，支持 36/40/44/48/52/.../165 等 5G 信道，接口从 `wlan0` rename 为
       `wlx4cb7e0569cc4`。后续直接在 GNOME Wi-Fi 或 `nmcli dev wifi connect ... ifname wlx4cb7e0569cc4` 连 5G SSID。
       若接口偶发消失，优先怀疑 USB 接触/供电/省电重置，先拔插后跑 `scripts/mercury-aic8800-enable.sh`。
-- [ ] 全局 ctrl+f1 截图，可直接贴在屏幕上，或选择复制到剪贴板
-- [/] 复制文本/图片后，F3贴在桌面上，右键可重新复制，双击可销毁，拖动可移动，滚动可缩放 
-  - [x] 复制文本可贴屏幕 @done(2026-06-19)
-  - [ ] 长文本应能自动换行--可显示完整内容
-  - [ ] 现在鼠标滚动缩放突然失效了
-  - [ ] 当它在某应用（终端除外）上面时，不能拖动；在桌面上，若右键弹出系统菜单后，就不能拖动了
+    [2026-06-21 dpkg修复] 后续 apt 安装其它包时暴露 `aic8800d80fdrvpackage` 处于 half-configured：vendor postinst
+      在模块已经加载时仍直接 `insmod /usr/src/AIC8800/.../aic_load_fw.ko`，内核返回 `File exists`，导致 dpkg 配置失败。
+      已写 `scripts/aic8800-fix-dpkg-half-configured.sh`：先确认已安装模块存在、`aic8800_fdrv.ko` 含 `2357:014b` alias，
+      再备份 `/var/lib/dpkg/info/aic8800d80fdrvpackage.postinst`，替换成幂等版 postinst（`depmod` + `modprobe ... || true`），
+      执行 `dpkg --configure aic8800d80fdrvpackage`，不覆盖当前已签名且可用的模块。用户已执行脚本；复查包状态为
+      `ii / install ok installed`，`wlx4cb7e0569cc4` 仍连接 5G。
 - [x] dolphin: 左树右列表，中文都是仿宋，需要调整 @done(2026-06-20)
     走过的两条弯路(均无效，已回退)：
       ① 改 ~/.config/kdeglobals [General] font= —— 无效。GNOME 下未装 plasma-integration，没人把 kdeglobals 喂给 Qt。已还原(备份 kdeglobals.bak.20260620154739)。
