@@ -1,3 +1,21 @@
+- [x] 需要从远程服务器复制 openclaw 的配置、成果文件等至本地 @done(2026-06-26)
+    [2026-06-26] 已把远端 OpenClaw 运行数据复制到本机 `~/.openclaw`，并复制 `~/vault`、`~/PDF`；
+      未复制远端 `~/workspace`，也未把复制内容放入 git。已停止并 disable 远端 root 用户级
+      `openclaw-gateway.service`，未重启服务器。
+    [2026-06-26] 本机已安装 `openclaw@2026.6.1`，修正 workspace 与会话元数据中的远端 root 路径，
+      启动本机用户级 `openclaw-gateway.service`；QQ Bot 已验证连接到本机 OpenClaw。
+      脱敏实施记录见 `docs/openclaw-migration.md`。
+- [x] 修改本机frpc的目标服务器 @done(2026-06-26)
+    [2026-06-26] 已把本机 `~/.config/frp/frpc.toml` 的 `serverAddr` 从旧中转服务器切到新中转服务器，
+      重启用户级 `frpc.service` 后日志确认 `login to server success` / `start proxy success`。
+      已通过 `ssh -p <REMOTE_SSH_PORT> <LOCAL_USER>@<NEW_RELAY_DOMAIN>` 从外部链路连回本机验证成功。
+    [2026-06-26] 新中转服务器已部署 `frps` 0.68.0 systemd 服务，配置仅开放 `<FRPS_BIND_PORT>` 与
+      `<REMOTE_SSH_PORT>` 所需范围；真实域名/IP/用户名/端口不写入仓库。
+    [2026-06-26] 旧中转服务器经日志核对后确认无其它有效 frp 转发在用，已停止、disable 并移除旧
+      `frps.service`；保留旧服务器上的 frp 程序目录作为后续参考。
+    [2026-06-26] 新增 `scripts/frpc-switch-server-with-rollback.sh`，可在切换 `frpc` 目标服务器时自动备份、
+      重启、测试 SSH 隧道；若测试失败则自动恢复旧 `serverAddr` 并重启 `frpc`。
+- [ ] 全局 ctrl+f1 截图，可直接贴在屏幕上，或选择复制到剪贴板，双击可以销毁，拖动可以移动；鼠标滚轮可缩放。此功能可参照windows下的snipaste。
 - [x] 复制文本/图片后，F3贴在桌面上，右键可重新复制，双击可销毁，拖动可移动，滚动可缩放 @done(2026-06-23)
   - [x] 复制文本可贴屏幕 @done(2026-06-19)
   - [x] 长文本应能自动换行--可显示完整内容 @done(2026-06-22)
@@ -22,7 +40,6 @@
     滚轮缩放：一次物理拨动=一档(方向变或安静>50ms 判定新拨动，归并一档的不定数子事件)，走固定缩放阶梯
       (≤100%每档10%、100→200%每档20%、>200%每档50%)，按下标进退故数值干净、上下严格可逆；左上角显示
       百分比、1.5s 后消失。范围 30%–300%。
-- [ ] 全局 ctrl+f1 截图，可直接贴在屏幕上，或选择复制到剪贴板，双击可以销毁，拖动可以移动；鼠标滚轮可缩放。此功能可参照windows下的snipaste。
 - [x] 想实现内网穿透，通过一台有公网域名/IP的服务器作中转，用frp软件实现远程ssh连接本机。 @done(2026-06-21)
     [2026-06-21] 已完成公网服务器 frps systemd 化，服务 active 并监听公网 frp 端口；本机已安装 frpc 0.68.0 到
       ~/.local/bin/frpc，写入用户级 systemd 服务 ~/.config/systemd/user/frpc.service 并 enable/start，远端已监听转发端口。
