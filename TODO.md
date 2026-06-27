@@ -1,3 +1,14 @@
+- [/] dophin 文件管理，右侧预览区域，能否自动显示docx/excel/pdf/txt/md等文件内容，像图片那样 @done(2026-06-27)
+    [2026-06-27] 结论：Dolphin 23.08 右侧信息面板只走 KIO 缩略图预览，不是完整文档阅读器；图片会显得像内容预览，
+      但 docx/xlsx/pdf/txt/md 通常只能显示第一页、封面或文本开头，不能在面板内翻页/滚动/编辑。本机已有
+      `gsthumbnail.so`(PDF)、`opendocumentthumbnail.so`(docx/xlsx/pptx)、`textthumbnail.so`(txt)；
+      但 `opendocumentthumbnail.so` 只读 Office 文档内嵌缩略图，很多 docx/xlsx 没有保存缩略图就不会显示内容；
+      md 识别为 `text/markdown`，而本机 `textthumbnail.so` 只声明 `text/plain`，所以 Dolphin 23.08
+      不会用它预览 md；`markdownpart` 也不是 Dolphin 信息面板 thumbnailer。已新增
+      `scripts/dolphin-document-preview.sh` 写入 Dolphin 用户级预览配置并检查插件；完整记录见
+      `docs/dolphin-document-preview.md`。2026-06-27 复查后脚本已补写 `PreviewSettings/Plugins`，
+      显式启用已安装 thumbnailer；`--install` 后续已收窄为只安装 Dolphin 缩略图相关包，不再安装
+      `okular`/`libreoffice-*`/`markdownpart`。
 - [x] F3贴图或ctrl+f1截图后贴图，可旋转、翻转，参考spipaste的模式：点击图片后，按1向左旋转90度，2左右翻转，3上下翻转，4向右旋转90度 @done(2026-06-27)
     [2026-06-27] 已给图片贴纸增加点击选中后的数字键变换：1 左转 90 度、2 左右翻转、3 上下翻转、4 右转 90 度；F3 剪贴板图片和 Ctrl+F1 截图贴屏共用同一实现。变换会重建当前 pixbuf，右键重新复制会复制变换后的图片。
 - [x] 需要从远程服务器复制 openclaw 的配置、成果文件等至本地 @done(2026-06-26)
