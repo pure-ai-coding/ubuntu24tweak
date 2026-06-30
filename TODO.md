@@ -1,3 +1,19 @@
+- [x] 本机（ubuntu24.04）能否像windows一样，任务栏显示当前打开的窗口，以及固定在任务栏的图标 @done(2026-06-30)
+    [2026-06-30] 方案：安装 Dash to Panel 扩展替代 Ubuntu Dock。
+      Ubuntu Dock 原生不支持任务栏直接显示打开窗口、hover 预览等功能；Dash to Panel 可实现类似 Windows 7+ 的图标任务栏。
+    [2026-06-30] 已备份原 Ubuntu Dock 配置至 `~/dash-to-dock-backup-20260630-223341.conf`。
+    [2026-06-30] 安装过程：
+      1. `sudo apt install -y gettext`（提供 msgfmt）
+      2. `cd /tmp/dash-to-panel && make && make install`
+      3. `gnome-extensions disable ubuntu-dock@ubuntu.com`（禁用冲突的 Ubuntu Dock）
+      4. `gnome-extensions enable dash-to-panel@jderose9.github.com`
+      5. `Alt+F2 r` 重启 GNOME Shell
+    [2026-06-30] 卸载/恢复方法：
+      - 临时禁用：`gnome-extensions disable dash-to-panel@jderose9.github.com`
+      - 彻底卸载：`gnome-extensions uninstall dash-to-panel@jderose9.github.com`
+      - 恢复 Ubuntu Dock：`gnome-extensions enable ubuntu-dock@ubuntu.com`
+      - 恢复原 Dock 配置：`cat ~/dash-to-dock-backup-20260630-223341.conf | while read schema key val; do gsettings set "$schema" "$key" "$val"; done`
+    [2026-06-30] 配置入口：右键任务栏空白处 → Dash to Panel Settings。推荐：Position=Bottom, Panel Size=40-48, 启用窗口预览。
 - [x] 本机wezterm窗格的分隔线不明显，与app内的长线段基本一致，请修改为更醒目的分隔线 @done(2026-06-30)
     [2026-06-30] WezTerm 的 `colors.split` 只渲染"活跃窗格那一侧"的边框，非活跃侧仍为默认灰。
       这是 WezTerm 自身限制，无法同时自定义两侧颜色。已将 `~/.config/wezterm/wezterm.lua`
